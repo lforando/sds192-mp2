@@ -1,0 +1,35 @@
+---
+title: "Mp2"
+author:
+output:
+  github_document:
+    html_preview: false
+      #code_folding: show
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+```{r, eval=TRUE}
+load("house_elections.rda")
+load("candidates.rda")
+load("committees.rda")
+load("contributions.rda")
+```
+
+```{r}
+glimpse(house_elections)
+```
+
+```{r}
+glimpse(candidates)
+```
+
+```{r}
+glimpse(committees)
+```
+
+```{r}
+glimpse(contributions)
+```
