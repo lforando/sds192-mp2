@@ -1,0 +1,17 @@
+---
+title: "miniproject2"
+author: "Sarah Daum"
+date: "3/18/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+```{r}
+library(tidyverse)
+```
+
+hey everyone!
