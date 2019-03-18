@@ -12,7 +12,7 @@ output:
 
 This project is so interesting and relevant to my bachelors degree! 
 
-my edits aren't working ;,(
+my edits aren't working??
 
 ```{r, message=FALSE}
 library(tidyverse)
