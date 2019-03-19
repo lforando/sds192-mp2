@@ -10,8 +10,6 @@ output:
 
 ## Loading the data
 
-This project is so [blank] and [relevant?] to my bachelor's degree! 
-
 ```{r, message=FALSE}
 library(tidyverse)
 load("house_elections.rda")
@@ -21,3 +19,9 @@ load("contributions.rda")
 ```
 
 > Word count: `r wordcountaddin::word_count()`
+
+```{r}
+candidates %>%
+  filter(cand_election_yr > 2010 & cand_election_yr < 2013)
+```
+
