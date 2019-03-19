@@ -2,9 +2,8 @@
 title: "Mp2"
 author:
 output:
-  github_document:
-    html_preview: false
-      #code_folding: show
+  html_preview: false
+      code_folding: show
 ---
 
 ```{r setup, include=FALSE}
@@ -21,6 +20,15 @@ load("contributions.rda")
 ```{r}
 glimpse(house_elections)
 ```
+
+```{r}
+mass_elections <- house_elections %>%
+  select(fec_id, state, candidate_name, party, general_votes, ge_winner) %>%
+  filter(state == "MA")
+
+glimpse(mass_elections)
+```
+
 
 ```{r}
 glimpse(candidates)
