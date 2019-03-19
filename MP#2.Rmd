@@ -18,10 +18,6 @@ load("contributions.rda")
 ```
 
 ```{r}
-glimpse(house_elections)
-```
-
-```{r}
 mass_elections <- house_elections %>%
   select(fec_id, state, candidate_name, party, general_votes, ge_winner) %>%
   filter(state == "MA")
