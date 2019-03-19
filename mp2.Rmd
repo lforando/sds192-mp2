@@ -23,6 +23,13 @@ load("contributions.rda")
 ```{r}
 candidates %>%
   filter(cand_election_yr > 2010 & cand_election_yr < 2013) %>%
-  filter(cand_party_affiliation != "UNK")
+  filter(cand_party_affiliation != "UNK") %>%
+  filter(cand_office_state == "MA")
+```
+
+```{r}
+house_elections_MA <- house_elections %>%
+  filter(state == "MA")
+house_elections_MA
 ```
 
