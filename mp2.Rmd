@@ -22,6 +22,7 @@ load("contributions.rda")
 
 ```{r}
 candidates %>%
-  filter(cand_election_yr > 2010 & cand_election_yr < 2013)
+  filter(cand_election_yr > 2010 & cand_election_yr < 2013) %>%
+  filter(cand_party_affiliation != "UNK")
 ```
 
