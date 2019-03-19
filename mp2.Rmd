@@ -10,7 +10,7 @@ output:
 
 ## Loading the data
 
-This project is so [blank] and [relevant?] to my bachelor's degree! 
+This project is about [something]
 
 ```{r, message=FALSE}
 library(tidyverse)
