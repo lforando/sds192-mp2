@@ -18,22 +18,49 @@ load("contributions.rda")
 ```
 
 ```{r}
-mass_elections <- house_elections %>%
+florida_elections <- house_elections %>%
   select(fec_id, state, candidate_name, party, general_votes, ge_winner) %>%
-  filter(state == "MA")
+  filter(state == "FL")
 
-glimpse(mass_elections)
+glimpse(florida_elections)
 ```
 
 
 ```{r}
-glimpse(candidates)
+florida_candidates <- candidates %>%
+  filter(cand_election_yr > 2010 & cand_election_yr < 2013) %>%
+  filter(cand_party_affiliation != "UNK") %>%
+  filter(cand_office_state == "MA") %>%
+  select(cand_id, cand_name) 
+  
+glimpse(florida_candidates)
 ```
 
 ```{r}
-glimpse(committees)
+florida_committees <- committees %>%
+  select(cmte_id, cmte_name, tres_name)
+
+glimpse(florida_committees)
 ```
 
 ```{r}
-glimpse(contributions)
+florida_contributions <- contributions %>%
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id)
+
+glimpse(florida_contributions)
 ```
+
+
+```{r}
+contribution_committees <- florida_contributions %>%
+  full_join(florida_committees, by = "cmte_id") %>%
+  full_join(florida_candidates, by = "cand_id") 
+
+
+glimpse(contribution_committees)
+```
+
+
+
+
+
