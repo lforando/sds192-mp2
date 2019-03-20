@@ -1,6 +1,6 @@
 ---
 title: "Mini-Project 2"
-author: "Your Name Here"
+author: "Lydia Ivanovic, Sarah Daum, Lauren Forando"
 date: "2019-03-24"
 output: 
   html_document:
@@ -9,8 +9,6 @@ output:
 
 
 ## Loading the data
-
-This project is so interesting and relevant to my life!
 
 ```{r, message=FALSE}
 library(tidyverse)
@@ -21,3 +19,18 @@ load("contributions.rda")
 ```
 
 > Word count: `r wordcountaddin::word_count()`
+
+```{r}
+candidates %>%
+  filter(cand_election_yr > 2010 & cand_election_yr < 2013) %>%
+  filter(cand_party_affiliation != "UNK") %>%
+  filter(cand_office_state == "MA")
+```
+
+```{r}
+house_elections_MA <- house_elections %>%
+  filter(state == "MA")
+house_elections_MA
+```
+
+CHANGE
