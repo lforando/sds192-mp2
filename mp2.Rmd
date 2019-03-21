@@ -4,32 +4,56 @@ author: "Lydia Ivanovic, Sarah Daum, Lauren Forando"
 date: "2019-03-24"
 output: 
   html_document:
-    code_folding: show
+    code_folding: hide
 ---
-
-
-## Loading the data
-
-```{r, message=FALSE}
+#loading the data
+```{r setup, include=FALSE}
 library(tidyverse)
+```
+
+```{r, eval=TRUE}
 load("house_elections.rda")
 load("candidates.rda")
 load("committees.rda")
 load("contributions.rda")
 ```
 
-> Word count: `r wordcountaddin::word_count()`
-
+#looking at a swing state in the 2011 elections
 ```{r}
-candidates %>%
+florida_elections <- house_elections %>%
+  select(fec_id, state, candidate_name, party, general_votes, ge_winner) %>%
+  filter(state == "FL")
+glimpse(florida_elections)
+```
+
+#filtering for all fl relevant data
+```{r}
+florida_candidates <- candidates %>%
   filter(cand_election_yr > 2010 & cand_election_yr < 2013) %>%
   filter(cand_party_affiliation != "UNK") %>%
-  filter(cand_office_state == "MA")
+  filter(cand_office_state == "MA") %>%
+  select(cand_id, cand_name) 
+  
+glimpse(florida_candidates)
 ```
 
 ```{r}
-house_elections_MA <- house_elections %>%
-  filter(state == "MA")
-house_elections_MA
+florida_committees <- committees %>%
+  select(cmte_id, cmte_name, tres_name)
+glimpse(florida_committees)
 ```
 
+```{r}
+florida_contributions <- contributions %>%
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type)
+  #filter(transaction_type == "24E" & transaction_type == "24K")
+glimpse(florida_contributions)
+```
+
+
+```{r}
+contribution_committees <- florida_contributions %>%
+  full_join(florida_committees, by = "cmte_id") %>%
+  full_join(florida_candidates, by = "cand_id") 
+glimpse(contribution_committees)
+```
