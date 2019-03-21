@@ -20,10 +20,11 @@ load("contributions.rda")
 
 ```{r}
 florida_elections <- house_elections %>%
-  select(fec_id, state, candidate_name, party, general_votes, ge_winner) %>%
-  filter(state == "FL")
+  filter(state == "FL") %>%
+  select(state, candidate_name, party, general_votes, ge_winner)
 
 glimpse(florida_elections)
+glimpse(house_elections)
 ```
 
 
@@ -31,10 +32,12 @@ glimpse(florida_elections)
 florida_candidates <- candidates %>%
   filter(cand_election_yr > 2010 & cand_election_yr < 2013) %>%
   filter(cand_party_affiliation != "UNK") %>%
-  filter(cand_office_state == "MA") %>%
-  select(cand_id, cand_name) 
-  
+  filter(cand_office_state == "FL") %>%
+  select(cand_id, cand_name, cand_party_affiliation,) %>%
+  rename(candidate_name = cand_name)
+
 glimpse(florida_candidates)
+#glimpse(candidates)
 ```
 
 ```{r}
@@ -46,19 +49,29 @@ glimpse(florida_committees)
 
 ```{r}
 florida_contributions <- contributions %>%
-  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id)
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type) %>%
+  filter(transaction_type == "24E" | transaction_type == "24A")
 
-glimpse(florida_contributions)
+
+florida_opposing <- florida_contributions %>%
+  filter(transaction_type == "24E")
+
+florida_infavor <- florida_contributions %>%
+  filter(transaction_type == "24A")
+
+glimpse(florida_infavor)
+glimpse(florida_opposing)
 ```
 
 
 ```{r}
-contribution_committees <- florida_contributions %>%
+florida_infavor_contributions <- florida_infavor %>%
   full_join(florida_committees, by = "cmte_id") %>%
-  full_join(florida_candidates, by = "cand_id") 
-
-
-glimpse(contribution_committees)
+  full_join(florida_candidates, by = "cand_id") %>%
+  full_join(florida_elections, by = "candidate_name") 
+  
+  
+glimpse(florida_infavor_contributions)
 ```
 
 
