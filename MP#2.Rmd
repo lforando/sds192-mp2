@@ -1,4 +1,5 @@
 ---
+
 title: "Mini-Project 2"
 author: "Lydia Ivanovic, Sarah Daum, Lauren Forando"
 date: "2019-03-24"
@@ -9,6 +10,8 @@ output:
 
 ```{r setup, include=FALSE}
 library(tidyverse)
+library(grid)
+library(gridExtra)
 ```
 
 #loading the data
@@ -24,6 +27,7 @@ load("contributions.rda")
 florida_elections <- house_elections %>%
   filter(state == "FL") %>%
   select(state, candidate_name, party, general_votes, ge_winner)
+
 glimpse(florida_elections)
 glimpse(house_elections)
 ```
@@ -36,6 +40,7 @@ florida_candidates <- candidates %>%
   filter(cand_office_state == "FL") %>%
   select(cand_id, cand_name, cand_party_affiliation) %>%
   rename(candidate_name = cand_name)
+
 glimpse(florida_candidates)
 #glimpse(candidates)
 ```
@@ -50,8 +55,7 @@ glimpse(committees)
 ```{r}
 florida_contributions <- contributions %>%
   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type) %>%
-  filter(transaction_type == "24E" | transaction_type == "24A") %>%
-  na.omit()
+  filter(transaction_type == "24E" | transaction_type == "24A")
 #florida_opposing <- florida_contributions %>%
   #filter(transaction_type == "24E")
 #florida_infavor <- florida_contributions %>%
@@ -62,23 +66,23 @@ glimpse(florida_contributions)
 ```
 
 ```{r}
-florida_infavor_contributions <- florida_infavor %>%
-  full_join(florida_committees, by = "cmte_id") %>%
-  full_join(florida_candidates, by = "cand_id") %>%
-  full_join(florida_elections, by = "candidate_name") %>%
-  filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
-  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) 
-  
-  
-florida_opposing_contributions <- florida_opposing %>%
-  full_join(florida_committees, by = "cmte_id") %>%
-  full_join(florida_candidates, by = "cand_id") %>%
-  full_join(florida_elections, by = "candidate_name") %>%
-  filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
-  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation)
-  
-glimpse(florida_infavor_contributions)
-glimpse(florida_opposing_contributions)
+# florida_infavor_contributions <- florida_infavor %>%
+#   full_join(florida_committees, by = "cmte_id") %>%
+#   full_join(florida_candidates, by = "cand_id") %>%
+#   full_join(florida_elections, by = "candidate_name") %>%
+#   filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
+#   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) 
+#   
+#   
+# florida_opposing_contributions <- florida_opposing %>%
+#   full_join(florida_committees, by = "cmte_id") %>%
+#   full_join(florida_candidates, by = "cand_id") %>%
+#   full_join(florida_elections, by = "candidate_name") %>%
+#   filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
+#   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation)
+#   
+# glimpse(florida_infavor_contributions)
+# glimpse(florida_opposing_contributions)
 ```
 
 
@@ -89,7 +93,9 @@ florida_contributions_full <- florida_contributions %>%
   full_join(florida_candidates, by = "cand_id") %>%
   full_join(florida_elections, by = "candidate_name") %>%
   filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
-  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) 
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) %>%
+  mutate(trans_amount = transaction_amt/100000)
+
 glimpse(florida_contributions_full)
 ```
 
@@ -109,6 +115,7 @@ california_candidates <- candidates %>%
   filter(cand_office_state == "CA") %>%
   select(cand_id, cand_name, cand_party_affiliation) %>%
   rename(candidate_name = cand_name)
+
 glimpse(california_candidates)
 #glimpse(candidates)
 ```
@@ -132,7 +139,8 @@ california_contributions_full <- california_contributions %>%
   full_join(california_candidates, by = "cand_id") %>%
   full_join(california_elections, by = "candidate_name") %>%
   filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
-  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) 
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) %>%
+mutate(trans_amount = transaction_amt/100000)
 glimpse(california_contributions_full)
 ```
 
@@ -178,24 +186,60 @@ texas_contributions_full <- texas_contributions %>%
   full_join(texas_candidates, by = "cand_id") %>%
   full_join(texas_elections, by = "candidate_name") %>%
   filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
-  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) 
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) %>%
+mutate(trans_amount = transaction_amt/100000)
 glimpse(texas_contributions_full)
 ```
 
+##we need to create function for graphic so we can iterate w/ Florida, California, and Texas
+
 ##florida graphic
+
 ```{r}
-florida_graphic <- ggplot(florida_contributions_full, aes(x = cand_party_affiliation, y = transaction_amt)) +
-  geom_bar(stat = "identity", aes(fill = cand_party_affiliation)) +
+contribution_type_names <- c(`24E` = "Opposing",`24A` = "In Favor") 
+```
+
+
+```{r}
+florida_graphic <- ggplot(na.omit(florida_contributions_full), aes(x = cand_party_affiliation, y = trans_amount)) +
+  geom_bar(stat = "identity", width=0.5, aes(fill = cand_party_affiliation)) +
   scale_fill_manual(values = c("blue", "red")) +
-  facet_wrap(~transaction_type) +
+  facet_wrap(transaction_type~., labeller = as_labeller(contribution_type_names)) +
   ylab("Contribution Amount (in millions USD)") +
   xlab("Party Affiliation") +
   labs(title = "Florida", subtitle = "Contribution Activity in a Swing State") +
-  scale_y_continuous(lim = c(0, 2012), 
-                      breaks = seq(1940, 2000, 20),
-                      labels = c("1940" = "1940", "1960" = "'60", 
-                                 "1980" = "'80", "2000" = "2000")) +
+  theme_light() +
   theme(legend.position = "none")
 florida_graphic
+```
+
+```{r}
+california_graphic <- ggplot(na.omit(california_contributions_full), aes(x = cand_party_affiliation, y = trans_amount)) +
+  geom_bar(stat = "identity", width=0.5, aes(fill = cand_party_affiliation)) +
+  scale_fill_manual(values = c("blue", "red")) +
+  facet_wrap(transaction_type~., labeller = as_labeller(contribution_type_names)) +
+  ylab("Contribution Amount (in millions USD)") +
+  xlab("Party Affiliation") +
+  labs(title = "California", subtitle = "Contribution Activity in a Blue State") +
+  theme_light() +
+  theme(legend.position = "none")
+california_graphic
+```
+
+```{r}
+texas_graphic <- ggplot(na.omit(texas_contributions_full), aes(x = cand_party_affiliation, y = trans_amount)) +
+  geom_bar(stat = "identity", width=0.5, aes(fill = cand_party_affiliation)) +
+  scale_fill_manual(values = c("blue", "red")) +
+  facet_wrap(transaction_type~., labeller = as_labeller(contribution_type_names)) +
+  ylab("Contribution Amount (in millions USD)") +
+  xlab("Party Affiliation") +
+  labs(title = "Texas", subtitle = "Contribution Activity in a Red State") +
+  theme_light() +
+  theme(legend.position = "none")
+texas_graphic
+```
+
+```{r}
+grid.arrange(florida_graphic, california_graphic, texas_graphic, nrow = 3)
 ```
 
