@@ -82,7 +82,6 @@ florida_opposing_contributions <- florida_opposing %>%
   filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation)
   
-  
 
 glimpse(florida_infavor_contributions)
 glimpse(florida_opposing_contributions)
