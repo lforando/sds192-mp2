@@ -1,16 +1,17 @@
 ---
-title: "Mp2"
-author:
-output:
-  html_preview: false
-      code_folding: show
+title: "Mini-Project 2"
+author: "Lydia Ivanovic, Sarah Daum, Lauren Forando"
+date: "2019-03-24"
+output: 
+  html_document:
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
 library(tidyverse)
 ```
 
-
+#loading the data
 ```{r, eval=TRUE}
 load("house_elections.rda")
 load("candidates.rda")
@@ -18,50 +19,183 @@ load("committees.rda")
 load("contributions.rda")
 ```
 
+#looking into a swing state
 ```{r}
 florida_elections <- house_elections %>%
-  select(fec_id, state, candidate_name, party, general_votes, ge_winner) %>%
-  filter(state == "FL")
-
+  filter(state == "FL") %>%
+  select(state, candidate_name, party, general_votes, ge_winner)
 glimpse(florida_elections)
+glimpse(house_elections)
 ```
 
-
+#specifying for election year
 ```{r}
 florida_candidates <- candidates %>%
   filter(cand_election_yr > 2010 & cand_election_yr < 2013) %>%
   filter(cand_party_affiliation != "UNK") %>%
-  filter(cand_office_state == "MA") %>%
-  select(cand_id, cand_name) 
-  
+  filter(cand_office_state == "FL") %>%
+  select(cand_id, cand_name, cand_party_affiliation) %>%
+  rename(candidate_name = cand_name)
 glimpse(florida_candidates)
+#glimpse(candidates)
 ```
 
 ```{r}
 florida_committees <- committees %>%
   select(cmte_id, cmte_name, tres_name)
-
 glimpse(florida_committees)
+glimpse(committees)
 ```
 
 ```{r}
 florida_contributions <- contributions %>%
-  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id)
-
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type) %>%
+  filter(transaction_type == "24E" | transaction_type == "24A") %>%
+  na.omit()
+#florida_opposing <- florida_contributions %>%
+  #filter(transaction_type == "24E")
+#florida_infavor <- florida_contributions %>%
+  #filter(transaction_type == "24A")
 glimpse(florida_contributions)
+#glimpse(florida_infavor)
+#glimpse(florida_opposing)
+```
+
+```{r}
+florida_infavor_contributions <- florida_infavor %>%
+  full_join(florida_committees, by = "cmte_id") %>%
+  full_join(florida_candidates, by = "cand_id") %>%
+  full_join(florida_elections, by = "candidate_name") %>%
+  filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) 
+  
+  
+florida_opposing_contributions <- florida_opposing %>%
+  full_join(florida_committees, by = "cmte_id") %>%
+  full_join(florida_candidates, by = "cand_id") %>%
+  full_join(florida_elections, by = "candidate_name") %>%
+  filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation)
+  
+glimpse(florida_infavor_contributions)
+glimpse(florida_opposing_contributions)
+```
+
+
+
+```{r}
+florida_contributions_full <- florida_contributions %>%
+  full_join(florida_committees, by = "cmte_id") %>%
+  full_join(florida_candidates, by = "cand_id") %>%
+  full_join(florida_elections, by = "candidate_name") %>%
+  filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) 
+glimpse(florida_contributions_full)
+```
+
+#blue state
+```{r}
+california_elections <- house_elections %>%
+  filter(state == "CA") %>%
+  select(state, candidate_name, party, general_votes, ge_winner)
+glimpse(california_elections)
+glimpse(house_elections)
+```
+
+```{r}
+california_candidates <- candidates %>%
+  filter(cand_election_yr > 2010 & cand_election_yr < 2013) %>%
+  filter(cand_party_affiliation != "UNK") %>%
+  filter(cand_office_state == "CA") %>%
+  select(cand_id, cand_name, cand_party_affiliation) %>%
+  rename(candidate_name = cand_name)
+glimpse(california_candidates)
+#glimpse(candidates)
+```
+
+```{r}
+california_committees <- committees %>%
+  select(cmte_id, cmte_name, tres_name)
+glimpse(california_committees)
+```
+
+```{r}
+california_contributions <- contributions %>%
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type) %>%
+  filter(transaction_type == "24E" | transaction_type == "24A")
+glimpse(california_contributions)
+```
+
+```{r}
+california_contributions_full <- california_contributions %>%
+  full_join(california_committees, by = "cmte_id") %>%
+  full_join(california_candidates, by = "cand_id") %>%
+  full_join(california_elections, by = "candidate_name") %>%
+  filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) 
+glimpse(california_contributions_full)
+```
+
+
+#red state
+```{r}
+texas_elections <- house_elections %>%
+  filter(state == "TX") %>%
+  select(state, candidate_name, party, general_votes, ge_winner)
+glimpse(texas_elections)
+glimpse(house_elections)
 ```
 
 
 ```{r}
-contribution_committees <- florida_contributions %>%
-  full_join(florida_committees, by = "cmte_id") %>%
-  full_join(florida_candidates, by = "cand_id") 
-
-
-glimpse(contribution_committees)
+texas_candidates <- candidates %>%
+  filter(cand_election_yr > 2010 & cand_election_yr < 2013) %>%
+  filter(cand_party_affiliation != "UNK") %>%
+  filter(cand_office_state == "TX") %>%
+  select(cand_id, cand_name, cand_party_affiliation) %>%
+  rename(candidate_name = cand_name)
+glimpse(texas_candidates)
+#glimpse(candidates)
 ```
 
 
+```{r}
+texas_committees <- committees %>%
+  select(cmte_id, cmte_name, tres_name)
+glimpse(texas_committees)
+```
 
+```{r}
+texas_contributions <- contributions %>%
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type) %>%
+  filter(transaction_type == "24E" | transaction_type == "24A")
+glimpse(texas_contributions)
+```
 
+```{r}
+texas_contributions_full <- texas_contributions %>%
+  full_join(texas_committees, by = "cmte_id") %>%
+  full_join(texas_candidates, by = "cand_id") %>%
+  full_join(texas_elections, by = "candidate_name") %>%
+  filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) 
+glimpse(texas_contributions_full)
+```
+
+##florida graphic
+```{r}
+florida_graphic <- ggplot(florida_contributions_full, aes(x = cand_party_affiliation, y = transaction_amt)) +
+  geom_bar(stat = "identity", aes(fill = cand_party_affiliation)) +
+  scale_fill_manual(values = c("blue", "red")) +
+  facet_wrap(~transaction_type) +
+  ylab("Contribution Amount (in millions USD)") +
+  xlab("Party Affiliation") +
+  labs(title = "Florida", subtitle = "Contribution Activity in a Swing State") +
+  scale_y_continuous(lim = c(0, 2012), 
+                      breaks = seq(1940, 2000, 20),
+                      labels = c("1940" = "1940", "1960" = "'60", 
+                                 "1980" = "'80", "2000" = "2000")) +
+  theme(legend.position = "none")
+florida_graphic
+```
 
