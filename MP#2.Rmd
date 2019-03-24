@@ -1,5 +1,4 @@
 ---
-
 title: "Mini-Project 2"
 author: "Lydia Ivanovic, Sarah Daum, Lauren Forando"
 date: "2019-03-24"
@@ -7,6 +6,7 @@ output:
   html_document:
     code_folding: hide
 ---
+Link to Github Repository ^[git@github.com:lforando/sds192-mp2.git]
 
 ```{r setup, include=FALSE}
 library(tidyverse)
@@ -14,7 +14,6 @@ library(grid)
 library(gridExtra)
 ```
 
-#loading the data
 ```{r, eval=TRUE}
 load("house_elections.rda")
 load("candidates.rda")
@@ -22,85 +21,76 @@ load("committees.rda")
 load("contributions.rda")
 ```
 
-#looking into a swing state
+```{r, include = FALSE}
+glimpse(candidates)
+glimpse(house_elections)
+glimpse(committees)
+glimpse(contributions)
+```
+
+
 ```{r}
+#Data Wrangling: Florida
+
+#Overall, our goal is to look at the amount of money spend for and against opponents within both major political parties in a swing state. We chose to look at Florida because it is a well known swing state, and is large enough for us to obtain enough data regarding political contributions made.
+
+
+#we created a new table named florida_elections which holds information originally stored in house_elections.
 florida_elections <- house_elections %>%
+  #using the filter() function, we filtered to only look at information regarding the midterm elections in Florida.
   filter(state == "FL") %>%
+  #using the select() function, we selected the variables from house_elections that we wanted to move to florida_elections which included: state, candidate's name, party, number of general votes, and the general winner.
   select(state, candidate_name, party, general_votes, ge_winner)
 
-glimpse(florida_elections)
-glimpse(house_elections)
-```
+#glimpse(florida_elections)
+#glimpse(house_elections)
 
-#specifying for election year
-```{r}
+#Next, we want to specifiy what election year we are looking into. For this particular assignment, we analyzed the 2012 midterm elections.
+
+#we created a second table named florida_candidates which holds information originally stored in candidates. 
 florida_candidates <- candidates %>%
-  filter(cand_election_yr > 2010 & cand_election_yr < 2013) %>%
-  filter(cand_party_affiliation != "UNK") %>%
-  filter(cand_office_state == "FL") %>%
+  #using the fiter() function, we filtered out the the state we were interested in looking at (FL), the candidate election year (2010 - 2013), and filtered out any party affiliation values that are unknown (UNK)
+  filter(cand_election_yr > 2010 & cand_election_yr < 2013, cand_party_affiliation != "UNK", cand_office_state == "FL") %>%
+  #using the select() function, we selected the information from candidates that we wanted to store in our new variable florida_candidates; candidate ID, candidate name, and candidate party affiliation.
   select(cand_id, cand_name, cand_party_affiliation) %>%
   rename(candidate_name = cand_name)
+#glimpse(florida_candidates)
 
-glimpse(florida_candidates)
-#glimpse(candidates)
-```
 
-```{r}
+#we created a third table named florida_committees which holds information originally stored in committees. 
 florida_committees <- committees %>%
+  #using the select() function, we selected information from committees that we wanted to store in florida_committees: committee ID, committee name, and the name of the committee's treasurer.
   select(cmte_id, cmte_name, tres_name)
-glimpse(florida_committees)
-glimpse(committees)
-```
+#glimpse(florida_committees)
 
-```{r}
+#we created a fourth table named florida_contributions which houses information originally stored in contributions.
 florida_contributions <- contributions %>%
+  #using the select() function, we selected information from contributions that we wanted to move to our new variable florida_contributions.
   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type) %>%
+  #using the filter() function, we filtered out transaction types to be either infavor of a candiate (24E) or in opposition (24A).
   filter(transaction_type == "24E" | transaction_type == "24A")
-#florida_opposing <- florida_contributions %>%
-  #filter(transaction_type == "24E")
-#florida_infavor <- florida_contributions %>%
-  #filter(transaction_type == "24A")
-glimpse(florida_contributions)
-#glimpse(florida_infavor)
-#glimpse(florida_opposing)
-```
 
-```{r}
-# florida_infavor_contributions <- florida_infavor %>%
-#   full_join(florida_committees, by = "cmte_id") %>%
-#   full_join(florida_candidates, by = "cand_id") %>%
-#   full_join(florida_elections, by = "candidate_name") %>%
-#   filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
-#   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) 
-#   
-#   
-# florida_opposing_contributions <- florida_opposing %>%
-#   full_join(florida_committees, by = "cmte_id") %>%
-#   full_join(florida_candidates, by = "cand_id") %>%
-#   full_join(florida_elections, by = "candidate_name") %>%
-#   filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
-#   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation)
-#   
-# glimpse(florida_infavor_contributions)
-# glimpse(florida_opposing_contributions)
-```
+#glimpse(florida_contributions)
 
-
-
-```{r}
+#After creating the four new tables, we combined them together, one by one, each with a common variable.
 florida_contributions_full <- florida_contributions %>%
   full_join(florida_committees, by = "cmte_id") %>%
   full_join(florida_candidates, by = "cand_id") %>%
   full_join(florida_elections, by = "candidate_name") %>%
+  #once the four individual tables were combined into one main table, we used the filter() function to filter out candidate party affilitation as Republican or Democrat.
   filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
+  #using the select() function, we selected variables deemed important from the new table containing information from the four smaller tables.
   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) %>%
+  #using the mutate() function, we added the variable trans_amount which is equal to transaction amount divided by 100,000.
   mutate(trans_amount = transaction_amt/100000)
 
 glimpse(florida_contributions_full)
 ```
 
-#blue state
+
 ```{r}
+#Hitsorically Democatric Leaning State - California 
+
 california_elections <- house_elections %>%
   filter(state == "CA") %>%
   select(state, candidate_name, party, general_votes, ge_winner)
@@ -145,8 +135,10 @@ glimpse(california_contributions_full)
 ```
 
 
-#red state
+
 ```{r}
+#Hitsorically Republican Leaning State - Texas
+
 texas_elections <- house_elections %>%
   filter(state == "TX") %>%
   select(state, candidate_name, party, general_votes, ge_winner)
@@ -162,8 +154,8 @@ texas_candidates <- candidates %>%
   filter(cand_office_state == "TX") %>%
   select(cand_id, cand_name, cand_party_affiliation) %>%
   rename(candidate_name = cand_name)
-glimpse(texas_candidates)
-#glimpse(candidates)
+
+#glimpse(texas_candidates)
 ```
 
 
@@ -191,8 +183,20 @@ mutate(trans_amount = transaction_amt/100000)
 glimpse(texas_contributions_full)
 ```
 
-##we need to create function for graphic so we can iterate w/ Florida, California, and Texas
 
+
+
+
+
+
+
+
+
+
+
+
+
+##we need to create function for graphic so we can iterate w/ Florida, California, and Texas
 ##florida graphic
 
 ```{r}
@@ -221,9 +225,11 @@ california_graphic <- ggplot(na.omit(california_contributions_full), aes(x = can
   ylab("Contribution Amount (in millions USD)") +
   xlab("Party Affiliation") +
   labs(title = "California", subtitle = "Contribution Activity in a Blue State") +
+   theme(plot.title = element_text(family = "Century Gothic", size = 30, colour = 'Purple', face = "bold")) +
   theme_light() +
   theme(legend.position = "none")
-california_graphic
+  
+
 ```
 
 ```{r}
