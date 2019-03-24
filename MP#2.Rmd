@@ -28,12 +28,11 @@ glimpse(committees)
 glimpse(contributions)
 ```
 
-
+##Data Wrangling
 ```{r}
 #Data Wrangling: Florida
 
-#Overall, our goal is to look at the amount of money spend for and against opponents within both major political parties in a swing state. We chose to look at Florida because it is a well known swing state, and is large enough for us to obtain enough data regarding political contributions made.
-
+#Overall, our goal is to look at the amount of money spent for and against opponents within both major political parties in a swing state. We chose to look at Florida because it is a well known swing state, and is large enough for us to obtain enough data regarding political contributions made.
 
 #we created a new table named florida_elections which holds information originally stored in house_elections.
 florida_elections <- house_elections %>%
@@ -89,16 +88,15 @@ glimpse(florida_contributions_full)
 
 
 ```{r}
-#Hitsorically Democatric Leaning State - California 
+#Data Wrangling: California 
+
+#Next, we wanted to look at the amount of money spent for and against opponents within both major political parties in a historically liberal state. We chose to look at California because it is a well known, extremely liberal state, and is large enough for us to obtain enough data regarding political contributions made. The same logic and code that was used in the data wrangling for Florida was used for California, except with different variable names, and filtering for "CA" instead of "FL". 
 
 california_elections <- house_elections %>%
   filter(state == "CA") %>%
   select(state, candidate_name, party, general_votes, ge_winner)
-glimpse(california_elections)
-glimpse(house_elections)
-```
+#glimpse(california_elections)
 
-```{r}
 california_candidates <- candidates %>%
   filter(cand_election_yr > 2010 & cand_election_yr < 2013) %>%
   filter(cand_party_affiliation != "UNK") %>%
@@ -106,24 +104,18 @@ california_candidates <- candidates %>%
   select(cand_id, cand_name, cand_party_affiliation) %>%
   rename(candidate_name = cand_name)
 
-glimpse(california_candidates)
-#glimpse(candidates)
-```
+#glimpse(california_candidates)
 
-```{r}
 california_committees <- committees %>%
   select(cmte_id, cmte_name, tres_name)
-glimpse(california_committees)
-```
+#glimpse(california_committees)
 
-```{r}
 california_contributions <- contributions %>%
   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type) %>%
   filter(transaction_type == "24E" | transaction_type == "24A")
-glimpse(california_contributions)
-```
+#glimpse(california_contributions)
 
-```{r}
+
 california_contributions_full <- california_contributions %>%
   full_join(california_committees, by = "cmte_id") %>%
   full_join(california_candidates, by = "cand_id") %>%
@@ -131,48 +123,40 @@ california_contributions_full <- california_contributions %>%
   filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) %>%
 mutate(trans_amount = transaction_amt/100000)
-glimpse(california_contributions_full)
+
+#glimpse(california_contributions_full)
 ```
 
 
 
 ```{r}
-#Hitsorically Republican Leaning State - Texas
+#Data Wrangling: Texas
+
+#Last, we wanted to look at the amount of money spent for and against opponents within both major political parties in a historically conservative state. We chose to look at Texas because it is a well known, extremely conservative state, and is large enough for us to obtain enough data regarding political contributions made. The same logic and code that was used in the data wrangling for Florida was used for Texas, except with different variable names, and filtering for "TX" instead of "FL". 
+
 
 texas_elections <- house_elections %>%
   filter(state == "TX") %>%
   select(state, candidate_name, party, general_votes, ge_winner)
-glimpse(texas_elections)
-glimpse(house_elections)
-```
+#glimpse(texas_elections)
 
-
-```{r}
 texas_candidates <- candidates %>%
   filter(cand_election_yr > 2010 & cand_election_yr < 2013) %>%
   filter(cand_party_affiliation != "UNK") %>%
   filter(cand_office_state == "TX") %>%
   select(cand_id, cand_name, cand_party_affiliation) %>%
   rename(candidate_name = cand_name)
-
 #glimpse(texas_candidates)
-```
 
-
-```{r}
 texas_committees <- committees %>%
   select(cmte_id, cmte_name, tres_name)
-glimpse(texas_committees)
-```
+#glimpse(texas_committees)
 
-```{r}
 texas_contributions <- contributions %>%
   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type) %>%
   filter(transaction_type == "24E" | transaction_type == "24A")
-glimpse(texas_contributions)
-```
+#glimpse(texas_contributions)
 
-```{r}
 texas_contributions_full <- texas_contributions %>%
   full_join(texas_committees, by = "cmte_id") %>%
   full_join(texas_candidates, by = "cand_id") %>%
@@ -180,7 +164,7 @@ texas_contributions_full <- texas_contributions %>%
   filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) %>%
 mutate(trans_amount = transaction_amt/100000)
-glimpse(texas_contributions_full)
+#glimpse(texas_contributions_full)
 ```
 
 
@@ -195,16 +179,20 @@ glimpse(texas_contributions_full)
 
 
 
-
-##we need to create function for graphic so we can iterate w/ Florida, California, and Texas
-##florida graphic
-
+##*Data Graphic*
 ```{r}
 contribution_type_names <- c(`24E` = "Opposing",`24A` = "In Favor") 
-```
 
 
-```{r}
+###Inline Comments#####
+
+
+
+
+
+
+
+#Florida Data Graphic
 florida_graphic <- ggplot(na.omit(florida_contributions_full), aes(x = cand_party_affiliation, y = trans_amount)) +
   geom_bar(stat = "identity", width=0.5, aes(fill = cand_party_affiliation)) +
   scale_fill_manual(values = c("blue", "red")) +
@@ -215,9 +203,9 @@ florida_graphic <- ggplot(na.omit(florida_contributions_full), aes(x = cand_part
   theme_light() +
   theme(legend.position = "none")
 florida_graphic
-```
 
-```{r}
+
+#California Data Graphic
 california_graphic <- ggplot(na.omit(california_contributions_full), aes(x = cand_party_affiliation, y = trans_amount)) +
   geom_bar(stat = "identity", width=0.5, aes(fill = cand_party_affiliation)) +
   scale_fill_manual(values = c("blue", "red")) +
@@ -225,14 +213,11 @@ california_graphic <- ggplot(na.omit(california_contributions_full), aes(x = can
   ylab("Contribution Amount (in millions USD)") +
   xlab("Party Affiliation") +
   labs(title = "California", subtitle = "Contribution Activity in a Blue State") +
-   theme(plot.title = element_text(family = "Century Gothic", size = 30, colour = 'Purple', face = "bold")) +
   theme_light() +
   theme(legend.position = "none")
-  
 
-```
 
-```{r}
+#Texas Data Graphic
 texas_graphic <- ggplot(na.omit(texas_contributions_full), aes(x = cand_party_affiliation, y = trans_amount)) +
   geom_bar(stat = "identity", width=0.5, aes(fill = cand_party_affiliation)) +
   scale_fill_manual(values = c("blue", "red")) +
@@ -243,9 +228,7 @@ texas_graphic <- ggplot(na.omit(texas_contributions_full), aes(x = cand_party_af
   theme_light() +
   theme(legend.position = "none")
 texas_graphic
-```
 
-```{r}
 grid.arrange(florida_graphic, california_graphic, texas_graphic, nrow = 3)
 ```
 
