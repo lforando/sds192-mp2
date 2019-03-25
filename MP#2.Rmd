@@ -29,11 +29,11 @@ glimpse(committees)
 glimpse(contributions)
 ```
 
-##Data Wrangling
+##Data Wrangling opt #1
 ```{r}
 #Data Wrangling: Florida
 
-#Overall, our goal is to look at the amount of money spent for and against opponents within both major political parties in a swing state. We chose to look at Florida because it is a well known swing state, and is large enough for us to obtain enough data regarding political contributions made.
+#Overall, our goal is to look at the amount of money spent for and against opponents within both major political parties in a swing state, using analysis . We chose to look at Florida because it is a well known swing state, and is large enough for us to obtain enough data regarding political contributions made.
 
 #we created a new table named florida_elections which holds information originally stored in house_elections.
 florida_elections <- house_elections %>%
@@ -236,6 +236,40 @@ texas_graphic
 #grid.arrange(florida_graphic, california_graphic, texas_graphic, nrow = 3)
 ```
 
+##Data wrangling opt #2
+
+```{r}
+state_elections <- house_elections %>%
+  filter(state == "CA" | state == "FL" | state == "TX") %>%
+  select(state, candidate_name, party, general_votes, ge_winner)
+
+state_candidates <- candidates %>%
+  filter(cand_election_yr > 2010 & cand_election_yr < 2013) %>%
+  filter(cand_party_affiliation != "UNK") %>%
+  filter(cand_office_state == "CA" | cand_office_state == "FL" | cand_office_state == "TX") %>%
+  select(cand_id, cand_name, cand_party_affiliation) %>%
+  rename(candidate_name = cand_name)
+
+state_committees <- committees %>%
+  select(cmte_id, cmte_name)
+
+state_contributions <- contributions %>%
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type) %>%
+  filter(transaction_type == "24E" | transaction_type == "24A")
+
+state_contributions_full <- state_contributions %>%
+  full_join(state_committees, by = "cmte_id") %>%
+  full_join(state_candidates, by = "cand_id") %>%
+  full_join(state_elections, by = "candidate_name") %>%
+  filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
+  select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, candidate_name, cand_party_affiliation) %>%
+mutate(trans_amount = transaction_amt/100000)
+
+glimpse(state_contributions_full)
+```
+
+
+
 ```{r}
 #Iterative Data Graphic
 selected_states <- c(texas_contributions_full, florida_contributions_full, california_contributions_full)
@@ -259,5 +293,35 @@ state_graphic <- function(selected_states){
 state_graphic(selected_states = texas_contributions_full)
 state_graphic(selected_states = florida_contributions_full)
 state_graphic(selected_states = california_contributions_full)
+```
+
+```{r}
+#condensing house_elections data
+tri_state <- house_elections %>%
+  filter(state == "CA" | state == "TX" | state == "FL") %>%
+  filter(party == "D" | party == "R") %>%
+  group_by(state, party) %>%
+  summarize(total_votes = sum(general_votes)) %>%
+  mutate(total_votes = total_votes/100000)
+  head(tri_state)
+```
+
+```{r}
+#creating a comparison graphic for votes received in each state
+votes_graphic <- ggplot(tri_state, aes(x = party, y = total_votes)) +
+  geom_bar(stat = "identity", width=0.5, aes(fill = party)) +
+  scale_fill_manual(values = c("blue", "red")) +
+  ggtitle("2012 General Election Results") +
+       #subtitle = "Voter Activity Across Party 'Walls'") +
+  facet_wrap(state~.) +
+  ylab("Number of Votes (in Millions)") +
+  xlab(NULL) +
+  theme(panel.grid.major.x = element_blank()) +
+  theme(panel.grid.minor.x = element_blank()) +
+  theme(panel.grid.minor.y = element_blank()) +
+  theme(plot.title = element_text(family = "Century Gothic", size = 18, colour = 'Black', face = "bold"),
+        axis.text = element_text(family = "Century Gothic", size = 15, colour = 'Black')) +
+  theme(legend.position = "none")
+votes_graphic
 ```
 
