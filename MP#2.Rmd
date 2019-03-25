@@ -199,8 +199,8 @@ florida_graphic <- ggplot(na.omit(florida_contributions_full), aes(x = cand_part
   theme(panel.grid.minor.x = element_blank()) +
   theme(panel.grid.minor.y = element_blank()) +
   labs(title = "Florida", subtitle = "Contribution Activity in a Swing State") +
-  theme(plot.title = element_text(family = "Century Gothic", size = 30, colour = 'Black', face = "bold"),
-        axis.text = element_text(family = "Century Gothic", size = 20, colour = 'Black')) +
+  theme(plot.title = element_text(family = "Century Gothic", size = 18, colour = 'Black', face = "bold"),
+        axis.text = element_text(family = "Century Gothic", size = 15, colour = 'Black')) +
   theme(legend.position = "none")
 
 florida_graphic
@@ -231,7 +231,6 @@ texas_graphic <- ggplot(texas_contributions_final, aes(x = cand_party_affiliatio
   labs(title = "Texas", subtitle = "Contribution Activity in a Red State") +
   theme_light() +
   theme(legend.position = "none")
-texas_graphic
 
 #grid.arrange(florida_graphic, california_graphic, texas_graphic, nrow = 3)
 ```
@@ -272,7 +271,8 @@ glimpse(state_contributions_full)
 
 ```{r}
 #Iterative Data Graphic
-selected_states <- c(texas_contributions_full, florida_contributions_full, california_contributions_full)
+
+#For our data graphic, we decided to make three plots - one for each of the states we chose to analyze. We put all of the information to design the graphic into a function called state graphic, so that we can call on this function to generate the remaining two graphs without having to re-type all of the code.
 state_graphic <- function(selected_states){
   #took out na.omit(data) becuase wasn't working in iteration
   ggplot(data = selected_states, aes(x = cand_party_affiliation, y = trans_amount)) +
@@ -285,14 +285,14 @@ state_graphic <- function(selected_states){
   theme(panel.grid.minor.x = element_blank()) +
   theme(panel.grid.minor.y = element_blank()) +
   #labs(title = "Florida", subtitle = "Contribution Activity in a Swing State") +
-  theme(plot.title = element_text(family = "Century Gothic", size = 30, colour = 'Black', face = "bold"),
-        axis.text = element_text(family = "Century Gothic", size = 20, colour = 'Black')) +
+  theme(plot.title = element_text(family = "Century Gothic", size = 18, colour = 'Black', face = "bold"),
+        axis.text = element_text(family = "Century Gothic", size = 15, colour = 'Black')) +
   theme(legend.position = "none")
 }
 #map(selected_states, state_graphic)
-state_graphic(selected_states = texas_contributions_full)
-state_graphic(selected_states = florida_contributions_full)
-state_graphic(selected_states = california_contributions_full)
+state_graphic(selected_states = texas_contributions_final)
+state_graphic(selected_states = florida_contributions_final)
+state_graphic(selected_states = california_contributions_final)
 ```
 
 ```{r}
