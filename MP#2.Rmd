@@ -12,6 +12,7 @@ Link to Github Repository ^[git@github.com:lforando/sds192-mp2.git]
 library(tidyverse)
 library(grid)
 library(gridExtra)
+library(purrr)
 ```
 
 ```{r, eval=TRUE}
@@ -83,7 +84,8 @@ florida_contributions_full <- florida_contributions %>%
   #using the mutate() function, we added the variable trans_amount which is equal to transaction amount divided by 100,000.
   mutate(trans_amount = transaction_amt/100000)
 
-glimpse(florida_contributions_full)
+florida_contributions_final <- na.omit(florida_contributions_full)
+glimpse(florida_contributions_final)
 ```
 
 
@@ -124,7 +126,8 @@ california_contributions_full <- california_contributions %>%
   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) %>%
 mutate(trans_amount = transaction_amt/100000)
 
-#glimpse(california_contributions_full)
+california_contributions_final <- na.omit(california_contributions_full)
+glimpse(california_contributions_final)
 ```
 
 
@@ -164,22 +167,24 @@ texas_contributions_full <- texas_contributions %>%
   filter(cand_party_affiliation == "REP" | cand_party_affiliation == "DEM") %>%
   select(cmte_id, amndt_ind, transaction_pgi, name, transaction_amt, cand_id, tran_id, transaction_type, cmte_name, tres_name, candidate_name, cand_party_affiliation) %>%
 mutate(trans_amount = transaction_amt/100000)
-#glimpse(texas_contributions_full)
+
+texas_contributions_final <- na.omit(texas_contributions_full)
+glimpse(texas_contributions_final)
+```
+
+```{r}
+#merging each of our created dataframes to one big data frame
+florida_texas_merge <- merge(x = florida_contributions_final, y = texas_contributions_final, by=c("cmte_id"))
+full_state_merge <- merge(x = florida_texas_merge, y = california_contributions_final, by=c("cmte_id"))
 ```
 
 
 ##*Data Graphic*
+
+###How far does the smear campaign go?
+Our data seeks to illustrate the nuance of party campaign tactics based on types of expenditure in a given state.
 ```{r}
-contribution_type_names <- c(`24E` = "Opposing",`24A` = "In Favor") 
-
-
-###Inline Comments#####
-
-
-
-
-
-
+contribution_type_names <- c(`24E` = "Opposing",`24A` = "In Favor")
 ```
 
 ```{r}
@@ -198,7 +203,6 @@ florida_graphic <- ggplot(na.omit(florida_contributions_full), aes(x = cand_part
         axis.text = element_text(family = "Century Gothic", size = 20, colour = 'Black')) +
   theme(legend.position = "none")
 
-
 florida_graphic
 ```
 
@@ -213,10 +217,12 @@ california_graphic <- ggplot(na.omit(california_contributions_full), aes(x = can
   labs(title = "California", subtitle = "Contribution Activity in a Blue State") +
   theme_light() +
   theme(legend.position = "none")
+```
 
 
+```{r}
 #Texas Data Graphic
-texas_graphic <- ggplot(na.omit(texas_contributions_full), aes(x = cand_party_affiliation, y = trans_amount)) +
+texas_graphic <- ggplot(texas_contributions_final, aes(x = cand_party_affiliation, y = trans_amount)) +
   geom_bar(stat = "identity", width=0.5, aes(fill = cand_party_affiliation)) +
   scale_fill_manual(values = c("blue", "red")) +
   facet_wrap(transaction_type~., labeller = as_labeller(contribution_type_names)) +
@@ -227,6 +233,31 @@ texas_graphic <- ggplot(na.omit(texas_contributions_full), aes(x = cand_party_af
   theme(legend.position = "none")
 texas_graphic
 
-grid.arrange(florida_graphic, california_graphic, texas_graphic, nrow = 3)
+#grid.arrange(florida_graphic, california_graphic, texas_graphic, nrow = 3)
+```
+
+```{r}
+#Iterative Data Graphic
+selected_states <- c(texas_contributions_full, florida_contributions_full, california_contributions_full)
+state_graphic <- function(selected_states){
+  #took out na.omit(data) becuase wasn't working in iteration
+  ggplot(data = selected_states, aes(x = cand_party_affiliation, y = trans_amount)) +
+  geom_bar(stat = "identity", width=0.5, aes(fill = cand_party_affiliation)) +
+  scale_fill_manual(values = c("blue", "red")) +
+  facet_wrap(transaction_type~., labeller = as_labeller(contribution_type_names)) +
+  ylab("Contribution Amount (in millions USD)") +
+  xlab(NULL) +
+  theme(panel.grid.major.x = element_blank()) +
+  theme(panel.grid.minor.x = element_blank()) +
+  theme(panel.grid.minor.y = element_blank()) +
+  #labs(title = "Florida", subtitle = "Contribution Activity in a Swing State") +
+  theme(plot.title = element_text(family = "Century Gothic", size = 30, colour = 'Black', face = "bold"),
+        axis.text = element_text(family = "Century Gothic", size = 20, colour = 'Black')) +
+  theme(legend.position = "none")
+}
+#map(selected_states, state_graphic)
+state_graphic(selected_states = texas_contributions_full)
+state_graphic(selected_states = florida_contributions_full)
+state_graphic(selected_states = california_contributions_full)
 ```
 
