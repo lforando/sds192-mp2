@@ -8,29 +8,34 @@ output:
 ---
 Link to Github Repository ^[git@github.com:lforando/sds192-mp2.git]
 
-```{r setup, include=FALSE}
+```{r setup, echo = FALSE, include=FALSE, results='hide'}
 library(tidyverse)
 library(grid)
 library(gridExtra)
 library(purrr)
+#install.packages("fs")
+#we tried installing the package "fs", but it would not load on Lydia's R markdown file and caused Lauren's R to freeze and crash. Therefore, we were unable to use the word count addin function.
 ```
 
-```{r, eval=TRUE}
+```{r, echo = FALSE, include = FALSE, eval=TRUE}
 load("house_elections.rda")
 load("candidates.rda")
 load("committees.rda")
 load("contributions.rda")
 ```
 
-```{r, include = FALSE}
+```{r, include=FALSE, results='hide'}
 glimpse(candidates)
 glimpse(house_elections)
 glimpse(committees)
 glimpse(contributions)
 ```
 
-##Data Wrangling opt #1
-```{r}
+
+Negative campaigning, also called mudslinging, fearmongering, or smear campaigning, has been widely used in election campaigns across the globe. United States politicians have used mudslinging since 1828, when John Quincy Adams famously insulted Andrew Jackson’s in the Coffin Handbills pamphlet. ^[https://en.wikipedia.org/wiki/Coffin_Handbills#Accusations_of_bigamy]  Almost 200 years later, parties still spend millions of dollars on these negative campaigns.
+ Our project focuses on the use of mudslinging in the 2011-2012 election cycle -- which, experts argue, was the “nastiest” campaign to date. We looked at three different states -- California, Texas, and Florida --- to see how many election donations were spent on negative campaigns compared to donations in favor of a candidate. We chose these three states because of their political variety: California nearly always votes Democrat, Texas votes Republican, and Florida is a well-known swing state. Florida was an especially important state in 2012, which is why we chose to focus on it in our project. We predicted that parties would have used negative campaigning to win over undecided voters. 
+
+```{r, results = "hide"}
 #Data Wrangling: Florida
 
 #Overall, our goal is to look at the amount of money spent for and against opponents within both major political parties in a swing state, using analysis . We chose to look at Florida because it is a well known swing state, and is large enough for us to obtain enough data regarding political contributions made.
@@ -89,7 +94,7 @@ glimpse(florida_contributions_final)
 ```
 
 
-```{r}
+```{r, results = "hide"}
 #Data Wrangling: California 
 
 #Next, we wanted to look at the amount of money spent for and against opponents within both major political parties in a historically liberal state. We chose to look at California because it is a well known, extremely liberal state, and is large enough for us to obtain enough data regarding political contributions made. The same logic and code that was used in the data wrangling for Florida was used for California, except with different variable names, and filtering for "CA" instead of "FL". 
@@ -131,8 +136,7 @@ glimpse(california_contributions_final)
 ```
 
 
-
-```{r}
+```{r, results = "hide"}
 #Data Wrangling: Texas
 
 #Last, we wanted to look at the amount of money spent for and against opponents within both major political parties in a historically conservative state. We chose to look at Texas because it is a well known, extremely conservative state, and is large enough for us to obtain enough data regarding political contributions made. The same logic and code that was used in the data wrangling for Florida was used for Texas, except with different variable names, and filtering for "TX" instead of "FL". 
@@ -172,72 +176,17 @@ texas_contributions_final <- na.omit(texas_contributions_full)
 glimpse(texas_contributions_final)
 ```
 
-```{r}
-#merging each of our created dataframes to one big data frame
-florida_texas_merge <- merge(x = florida_contributions_final, y = texas_contributions_final, by=c("cmte_id"))
-full_state_merge <- merge(x = florida_texas_merge, y = california_contributions_final, by=c("cmte_id"))
-```
-
-
-##*Data Graphic*
 
 ###How far does the smear campaign go?
-Our data seeks to illustrate the nuance of party campaign tactics based on types of expenditure in a given state.
-```{r}
+####Analyzing our Data Graphic
+Our data seeks to illustrate the nuance of party campaign tactics based on types of expenditure in a given state, and whether or not there is a correlation between expenditure amount/type and voting results
+```{r, echo = FALSE, results = "hide", include = FALSE}
 contribution_type_names <- c(`24E` = "Opposing",`24A` = "In Favor")
 ```
 
-```{r}
-#Florida Data Graphic
-florida_graphic <- ggplot(na.omit(florida_contributions_full), aes(x = cand_party_affiliation, y = trans_amount)) +
-  geom_bar(stat = "identity", width=0.5, aes(fill = cand_party_affiliation)) +
-  scale_fill_manual(values = c("blue", "red")) +
-  facet_wrap(transaction_type~., labeller = as_labeller(contribution_type_names)) +
-  ylab("Contribution Amount (in millions USD)") +
-  xlab(NULL) +
-  theme(panel.grid.major.x = element_blank()) +
-  theme(panel.grid.minor.x = element_blank()) +
-  theme(panel.grid.minor.y = element_blank()) +
-  labs(title = "Florida", subtitle = "Contribution Activity in a Swing State") +
-  theme(plot.title = element_text(family = "Century Gothic", size = 18, colour = 'Black', face = "bold"),
-        axis.text = element_text(family = "Century Gothic", size = 15, colour = 'Black')) +
-  theme(legend.position = "none")
 
-florida_graphic
-```
-
-```{r}
-#California Data Graphic
-california_graphic <- ggplot(na.omit(california_contributions_full), aes(x = cand_party_affiliation, y = trans_amount)) +
-  geom_bar(stat = "identity", width=0.5, aes(fill = cand_party_affiliation)) +
-  scale_fill_manual(values = c("blue", "red")) +
-  facet_wrap(transaction_type~., labeller = as_labeller(contribution_type_names)) +
-  ylab("Contribution Amount (in millions USD)") +
-  xlab("Party Affiliation") +
-  labs(title = "California", subtitle = "Contribution Activity in a Blue State") +
-  theme_light() +
-  theme(legend.position = "none")
-```
-
-
-```{r}
-#Texas Data Graphic
-texas_graphic <- ggplot(texas_contributions_final, aes(x = cand_party_affiliation, y = trans_amount)) +
-  geom_bar(stat = "identity", width=0.5, aes(fill = cand_party_affiliation)) +
-  scale_fill_manual(values = c("blue", "red")) +
-  facet_wrap(transaction_type~., labeller = as_labeller(contribution_type_names)) +
-  ylab("Contribution Amount (in millions USD)") +
-  xlab("Party Affiliation") +
-  labs(title = "Texas", subtitle = "Contribution Activity in a Red State") +
-  theme_light() +
-  theme(legend.position = "none")
-
-#grid.arrange(florida_graphic, california_graphic, texas_graphic, nrow = 3)
-```
-
-##Data wrangling opt #2
-
-```{r}
+```{r, results = "hide"}
+#trying to create one original table
 state_elections <- house_elections %>%
   filter(state == "CA" | state == "FL" | state == "TX") %>%
   select(state, candidate_name, party, general_votes, ge_winner)
@@ -271,12 +220,13 @@ glimpse(state_contributions_full)
 
 ```{r}
 #Iterative Data Graphic
-
-#For our data graphic, we decided to make three plots - one for each of the states we chose to analyze. We put all of the information to design the graphic into a function called state graphic, so that we can call on this function to generate the remaining two graphs without having to re-type all of the code.
-state_graphic <- function(selected_states){
+state_names <- c("Texas", "Florida", "California")
+#For our data graphic, we decided to make three plots - one for each of the states we chose to analyze. We put all of the information to design the graphic into a function called state_graphic, so that we can call on this function to generate the remaining two graphs without having to re-type all of the code.
+state_graphic <- function(selected_states, state_name){
   #took out na.omit(data) becuase wasn't working in iteration
   ggplot(data = selected_states, aes(x = cand_party_affiliation, y = trans_amount)) +
   geom_bar(stat = "identity", width=0.5, aes(fill = cand_party_affiliation)) +
+    ggtitle(state_name) +
   scale_fill_manual(values = c("blue", "red")) +
   facet_wrap(transaction_type~., labeller = as_labeller(contribution_type_names)) +
   ylab("Contribution Amount (in millions USD)") +
@@ -284,18 +234,20 @@ state_graphic <- function(selected_states){
   theme(panel.grid.major.x = element_blank()) +
   theme(panel.grid.minor.x = element_blank()) +
   theme(panel.grid.minor.y = element_blank()) +
-  #labs(title = "Florida", subtitle = "Contribution Activity in a Swing State") +
   theme(plot.title = element_text(family = "Century Gothic", size = 18, colour = 'Black', face = "bold"),
         axis.text = element_text(family = "Century Gothic", size = 15, colour = 'Black')) +
   theme(legend.position = "none")
 }
 #map(selected_states, state_graphic)
-state_graphic(selected_states = texas_contributions_final)
-state_graphic(selected_states = florida_contributions_final)
-state_graphic(selected_states = california_contributions_final)
+state_graphic(selected_states = texas_contributions_final, 
+              state_name = "Texas") #"Contribution Activity in a Red State"
+state_graphic(selected_states = florida_contributions_final,
+              state_name = "Florida") #"Contribution Activity in a Swing State"
+state_graphic(selected_states = california_contributions_final,
+              state_name = "California") #"Contribution Activity in a Blue State"
 ```
 
-```{r}
+```{r, echo = FALSE, results = "hide", include = FALSE}
 #condensing house_elections data
 tri_state <- house_elections %>%
   filter(state == "CA" | state == "TX" | state == "FL") %>%
@@ -325,3 +277,10 @@ votes_graphic <- ggplot(tri_state, aes(x = party, y = total_votes)) +
 votes_graphic
 ```
 
+There are currently almost 4.4 million registered Republicans, and 4.6 million registered Democrats in Florida. 3 million Floridians registered as independents, which is why CNN dubbed it the “Swingiest Swing State” in America ^[https://www.cnn.com/2018/11/19/politics/florida-rick-scott-ron-desantis-donald-trump/index.html]. After filtering through the Florida data, we saw that more donations were used for positive campaigning than negative. Dems spent almost $50 million more than Republicans on positive campaigns, whereas Republicans spent almost twice as much as Dems on mudslinging. It is interesting to see this significant difference in campaign strategies, especially considering the trends in the rest of the country in 2012. Equally interesting were the results -- Democrats won Florida by almost 100,000 votes. From this data, we might be tempted to conclude that positive campaigning is a more effective strategy than mudslinging. However, the results were too close to have statistical significance (Dems only won by .9%). Still, it is interesting to see how the different parties use their outside contributions to campaign in a swing state.
+Next, we decided to look at Texas since it has historically been a conservative state. Once we filtered through the data to look specifically at Texas, we saw that substantially more money was spent in favor of Republican candidates than Democratic candidates (over 100 million dollars). Additionally, donors contributed more money for smear campaigns against Republicans than Democrats. This is most likely because there were more Republican candidates running in the 2012 election than Democrats, so Republican candidates used their donations against one another through smear campaigns. 
+Lastly, we decided to look at California since it has historically been a liberal state. We saw that more money was spent in favor of Democratic candidates than Republican candidates. Additionally, more money was donated for smear campaigns against Democrats than Republicans. This is most likely identical to Texas: contributions were given to Democratic candidates to use against one another. 
+Our final data graphic plots the total general election votes for each of our three selected states divided by party affiliation. In creating this graphic, we wanted to see if there was any correlation between the proportion of negative spending and the voting results per state and per party. However, since the values of spending and votes counted are absolute, we can drawn no definitive conclusions of any correlation between a specific type of committee expenditure and the composition of general election votes.
+
+
+We thought that we would see a greater correlation between negative campaigning and party votes in each state. However, this was not the case. Overall, our data seeks to illustrate the nuance of party campaign tactics based on types of expenditure in a given state, and whether or not there is a correlation between expenditure amount and number general votes. We decided to show our data through bar graphs because it is the simplest form of comparing quantitative values. 
